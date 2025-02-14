@@ -1,0 +1,51 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    # Step 1: Checkout the code
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    # Step 2: Set up AWS CLI
+    - name: Set up AWS CLI
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ secrets.AWS_REGION }}
+
+    # Step 3: Retrieve the DB Password from SSM Parameter Store
+    - name: Retrieve DB Password from SSM
+      id: ssm-parameter
+      run: |
+        DB_PASSWORD=$(aws ssm get-parameter --name "/myapp/dbpassword" --with-decryption --query "Parameter.Value" --output text)
+        echo "DB_PASSWORD=$DB_PASSWORD" >> $GITHUB_ENV
+
+    # Step 4: Simulate database connection (or use the DB_PASSWORD)
+    - name: Simulate Database Connection
+      run: |
+        echo "Connecting to the database with password: $DB_PASSWORD"
+        # Here you can simulate a connection or use the password in actual logic (e.g., a real DB connection)
+
+    # Optional: Run tests
+    - name: Run Tests (Optional)
+      run: |
+        echo "Running tests on the app..."
+        # Add any testing framework commands here (e.g., `pytest` for Python)
+
+    # Optional: Deploy your app (Simulated)
+    - name: Deploy App (Optional)
+      run: |
+        echo "Deploying the app..."
+        # Your deployment script/command here
